@@ -12,36 +12,39 @@ jobs:
       - name: 소스코드 체크아웃
         uses: actions/checkout@v4
 
-      # --- 추가된 부분: Java 빌드 단계 ---
+      # 1. JDK 17 설치 (Maven 빌드를 위해 필요)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven' # Maven 의존성 캐싱으로 빌드 속도 향상
 
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build -x test
-        working-directory: ./backend  # backend 폴더 안으로 들어가서 빌드 실행
-      # --------------------------------
+      # 2. Maven을 이용한 Java 프로젝트 빌드
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+        working-directory: ./backend  # backend 폴더로 이동해서 실행
 
+      # 3. Docker Hub 로그인
       - name: Docker Hub 로그인
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 4. 백엔드 이미지 빌드
       - name: Backend Docker Build
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:${{ github.sha }} ./backend
           docker tag ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:latest
 
+      # 5. 프런트엔드 이미지 빌드
       - name: Frontend Docker Build
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/yj-frontend:${{ github.sha }} ./frontend
           docker tag ${{ secrets.DOCKERHUB_USERNAME }}/yj-frontend:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/yj-frontend:latest
 
+      # 6. Docker Hub에 Push
       - name: Docker Hub Push
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/yj-backend:${{ github.sha }}
