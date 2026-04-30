@@ -19,19 +19,19 @@ services:
 
   # 2. 백엔드 (Spring Boot)
   backend:
-    image: timeleverage/yj-backend:latest   # ✅ 다운받을 image:태그로 변경
+    image: timeleverage/yj-backend:latest
     container_name: yj-backend
     environment:
-      - SPRING_PROFILES_ACTIVE=docker    # ✅ 이 설정이 실제로 적용되어야 함
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
       - "8080:8080"
     depends_on:
       db:
-        condition: service_healthy       # ✅ DB 완전 준비 후 시작
+        condition: service_healthy
 
   # 3. 프론트엔드 (React)
   frontend:
-    image: timeleverage/yj-frontend:latest  # ✅ 다운받을 image:태그로 변경
+    image: timeleverage/yj-frontend:latest
     container_name: yj-frontend
     ports:
       - "63342:80"
